@@ -7,17 +7,19 @@ import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
 import { PlusIcon } from "@/components/PlusIcon";
 
-import * as Select from '@radix-ui/react-select';
+import * as Select from "@radix-ui/react-select";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
 import { useState, useEffect } from "react";
-import { useSignMessage } from 'wagmi';
+import { useSignMessage } from "wagmi";
 
 import useSWR from "swr";
 import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
+
+import { generateViewingPrivateKey } from 'api/stealth'
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
@@ -27,30 +29,64 @@ function triggerSend() {}
 
 const message = "ethtokyo";
 
-
 export default function Home() {
-
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
-  })
+    onSettled(data, error) {
+      console.log('Settled', { data, error })
+      saveToLocalStorage(data);
+    },
+  });
 
-  function queryENS() {
+  const [address, setAddress] = useState(null);
 
+  function queryENS(ens) {
+    console.log(ens);
+    return fetch(`/api/query/${ens}`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        return data;
+      });
   }
 
-  function queryLens() {
-    
+  async function queryName(e) {
+    // Prevent the browser from reloading the page
+    e.preventDefault();
+
+    // Read the form data
+    const form = e.target;
+    const formData = new FormData(form);
+
+    // You can pass formData as a fetch body directly:
+    const result = await queryENS(formData.get("did-input"));
+    console.log(result);
+    setAddress(result);
   }
+
+  function queryLens() {}
 
   function scanTokens() {
     console.log("scanTokens");
-    
   }
 
-  const [ key, setKey ] = useState("send");
-  const [ scanResults, setScanResults ] = useState(null);
+  const [key, setKey] = useState("send");
+  const [scanResults, setScanResults] = useState(null);
 
-  useEffect(() => {});
+
+  const [stealPrivateK, setStealPrivateK] = useState("")
+
+  useEffect(() => {
+    let value
+    // Get the value from local storage if it exists
+    value = localStorage.getItem("stealPrivateK") || ""
+    setStealPrivateK(value)
+  }, [])
+
+  // When user submits the form, save the favorite number to the local storage
+  const saveToLocalStorage = (stealPrivateK) => {
+    localStorage.setItem("setStealPrivateK", stealPrivateK)
+  }
 
   return (
     <main
@@ -82,40 +118,45 @@ export default function Home() {
           <Tab eventKey="send" title="Send">
             <div className="input-container-wrapper">
               <div className="input-container">
-                <div className="input-combine">
-                  <input className="input-element" type="text" />
-                  <Dropdown
-                    onSelect={(eventKey) => {
-                      console.log(eventKey);
-                      if (eventKey === "lens") {
-                        
-                      } else {
+                <form method="get" onSubmit={queryName}>
+                  <div className="input-combine">
+                    <input
+                      className="input-element"
+                      type="text"
+                      id="did-input"
+                      name="did-input"
+                    />
+                    <button className="btn-button button-wrapper" type="submit">
+                      <EnsIcon />
+                      <span>ENS</span>
+                    </button>
+                    {/* <Dropdown>
+                      <Dropdown.Toggle variant="button" id="dropdown-query">
+                        Find Address
+                      </Dropdown.Toggle>
 
-                      }
-                    }}
-                  >
-                    <Dropdown.Toggle variant="button" id="dropdown-query">
-                      Find Address
-                    </Dropdown.Toggle>
+                      <Dropdown.Menu variant="button">
+                        <Dropdown.Item eventKey="lens">
+                          <button className="input-combine" type="submit">
+                            <LensIcon />
+                            <span>LENS</span>
+                          </button>
+                        </Dropdown.Item>
+                        <Dropdown.Item eventKey="ens">
+                          <button className="input-combine" type="submit">
+                            <EnsIcon />
+                            <span>ENS</span>
+                          </button>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown> */}
+                  </div>
+                </form>
 
-                    <Dropdown.Menu variant="button">
-                      <Dropdown.Item eventKey="lens">
-                        <div className="input-combine">
-                          <LensIcon />
-                          <span>LENS</span>
-                        </div>
-                      </Dropdown.Item>
-                      <Dropdown.Item eventKey="ens">
-                        <div className="input-combine">
-                          <EnsIcon />
-                          <span>ENS</span>
-                        </div>
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </div>
                 <div className="address-container">
-                  <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
+                  <div className="address">
+                    {address && <div>{address}</div>}
+                  </div>
                 </div>
               </div>
             </div>
@@ -127,12 +168,12 @@ export default function Home() {
               <div className="input-container">
                 <div className="input-combine">
                   <input className="input-element" type="text" value="100" />
-                  <Dropdown
+                  {/* <Dropdown
                     onSelect={(eventKey) => {
                       console.log(eventKey);
                       if (eventKey === "lens") {
                       } else {
-                        queryENS();
+                        // queryENS();
                       }
                     }}
                   >
@@ -152,21 +193,32 @@ export default function Home() {
                         </div>
                       </Dropdown.Item>
                     </Dropdown.Menu>
-                  </Dropdown>
+                  </Dropdown> */}
+                  <button className="btn-button button-wrapper" type="submit">
+                      <EthWrapper />
+                  </button>
                 </div>
                 <div className="address-container">
-                  <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
+                  <div className="address"></div>
                 </div>
               </div>
             </div>
             <button className="button w-full">Send</button>
           </Tab>
           <Tab eventKey="receive" title="Receive">
-            <button className="button w-full" disabled={isLoading} onClick={()=>{
-              signMessage()
-            }}>Scan</button>
+            <button
+              className="button w-full"
+              disabled={isLoading}
+              onClick={() => {
+                signMessage();
+              }}
+            >
+              Scan
+            </button>
             <hr className="hr" />
-            {!scanResults && <div className="text-center font-size-5">No results</div>}
+            {!scanResults && (
+              <div className="text-center font-size-5">No results</div>
+            )}
             {/* {scanResults && scanResults?.map((item) => {
               return (
                 <div className="input-combine">
@@ -176,7 +228,6 @@ export default function Home() {
                 </div>
               )
             })} */}
-            
           </Tab>
         </Tabs>
       </div>
