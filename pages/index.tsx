@@ -9,11 +9,11 @@ import { PlusIcon } from "@/components/PlusIcon";
 
 import * as Select from '@radix-ui/react-select';
 
-
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
 import { useState, useEffect } from "react";
+import { useSignMessage } from 'wagmi';
 
 import useSWR from "swr";
 import { UsdcWrapper } from "@/components/UsdcWrapper";
@@ -25,12 +25,17 @@ const inter = Inter({ subsets: ["latin"] });
 
 function triggerSend() {}
 
+const message = "ethtokyo";
+
+
 export default function Home() {
-  const { data, error } = useSWR('/api/query-ens', fetcher)
-  // const { ensResult, ensError } = useSWR('/api/query-ens', fetcher)
-  // const { data, error } = useSWR('/api/query-lens', fetcher)
+
+  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+    message,
+  })
 
   function queryENS() {
+
   }
 
   function queryLens() {
@@ -42,7 +47,7 @@ export default function Home() {
     
   }
 
-  const [key, setKey] = useState("send");
+  const [ key, setKey ] = useState("send");
   const [ scanResults, setScanResults ] = useState(null);
 
   useEffect(() => {});
@@ -157,12 +162,12 @@ export default function Home() {
             <button className="button w-full">Send</button>
           </Tab>
           <Tab eventKey="receive" title="Receive">
-            <button className="button w-full" onClick={()=>{
-
+            <button className="button w-full" disabled={isLoading} onClick={()=>{
+              signMessage()
             }}>Scan</button>
             <hr className="hr" />
             {!scanResults && <div className="text-center font-size-5">No results</div>}
-            {scanResults && scanResults?.map((item) => {
+            {/* {scanResults && scanResults?.map((item) => {
               return (
                 <div className="input-combine">
                   <div className="scan-result">{item.receiver}</div>
@@ -170,7 +175,7 @@ export default function Home() {
                   <div className="scan-result">{item.amount}</div>
                 </div>
               )
-            })}
+            })} */}
             
           </Tab>
         </Tabs>
