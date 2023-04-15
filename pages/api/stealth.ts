@@ -16,7 +16,10 @@ export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cE
 export const STEALTH_PUBKEY = "publickey"
 export const contractBlock = 8833960
 const transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
-    "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256]"
+    "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256)"
+
+const transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
+    "transferETH_withInitcode_withPaymaster_UserOp(address,uint256,address,uint256,address,uint256,uint256,uint256)"
 
 export interface AssetInfo {
     AccountAddress: string
@@ -131,11 +134,10 @@ export async function getWithdrawUserOps(provider: any, assets: AssetInfo[], toA
     for (let asset of assets) {
         const walletOwner = new Wallet(asset.PrivateKey)
         const userOpData = await userOpHelper.functions[
-            transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
+            transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
         ](
-            asset.AssetAddress,
-            toAddress, // token recipient
-            asset.Amount, // token amount
+            toAddress, // eth recipient
+            asset.Amount, // amount
             walletOwner.address, // wallet owner
             asset.Salt,
             paymasterAddress,
