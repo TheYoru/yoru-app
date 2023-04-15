@@ -16,3 +16,14 @@ export async function getTextRecordFromEns(ens: string, textKey: string): Promis
 
     return textValue;
 }
+
+export async function getAddrFromEns(ens: string): Promise<string> {
+    var namehash = require("@ensdomains/eth-ens-namehash");
+    let node: string = namehash.hash(ens);
+
+    const mainnet = 1;
+    const provider = new ethers.providers.AlchemyProvider(mainnet, "NlQZPwyOUAggkxM2Zueh2hOFhuitu6sN");
+    const ensResolver = new ethers.Contract(ENS_RESOLVER_ADDR, ENS_RESOLVER_ABI, provider);
+    const addr: string = await ensResolver.addr(node);
+    return addr;
+}
