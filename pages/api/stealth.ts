@@ -1,8 +1,12 @@
-import { BigNumber, Contract, providers, utils } from "ethers";
+import { BigNumber, Contract, providers, utils, Wallet } from "ethers";
 import { getTextRecordFromEns } from "./ens";
 import { KeyPair } from "@/umbra/classes/KeyPair";
 import { RandomNumber } from "@/umbra/classes/RandomNumber";
-import { Wallet } from "ethers";
+
+import { abi as userOpHelperABI } from "./abis/UserOpHelper.json";
+
+const userOpHelperAddress = "0x63087b831D80Db6f65930339cFA38D4f7E486db3";
+const paymasterAddress = "0xb666fE2b562be86590c4DF43F12Ab1DBA9EC209C";
 
 const STEALTH_ANNOUNCEMENT_ABI = [
   {
@@ -154,8 +158,10 @@ const STEALTH_FACTORY_ABI = [
 const STEALTH_PUBKEY = "publickey";
 
 export interface AssetInfo {
+  AccountAddress: string;
   AssetAddress: string;
   Amount: BigNumber;
+  Salt: string;
   PrivateKey: string;
 }
 
@@ -207,11 +213,14 @@ export async function getAssets(
           newPrivateKey,
           randomNumberInHex
         );
+        const salt = utils.keccak256(randomNumberInHex);
         if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
           const amount: BigNumber = event["amount"];
           assetInfos.push({
+            AccountAddress: aaAddr,
             AssetAddress: event["token"],
             Amount: amount,
+            Salt: salt,
             PrivateKey: newPrivateKey,
           });
         }
