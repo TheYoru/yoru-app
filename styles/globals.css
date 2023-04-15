@@ -3,161 +3,166 @@
 @tailwind utilities;
 
 :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --foreground-rgb: 255, 255, 255;
-        --background-start-rgb: 0, 0, 0;
-        --background-end-rgb: 0, 0, 0;
-    }
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
 }
 
 body {
-    color: rgb(var(--foreground-rgb));
-    background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
-        rgb(var(--background-start-rgb));
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 .container {
-    width: 500px;
-    border: 1px solid rgba(152, 161, 192, 0.24);
-    padding: 8px;
-    border-radius: 16px;
-    position: relative;
+  width: 500px;
+  border: 1px solid rgba(152, 161, 192, 0.24);
+  padding: 8px;
+  border-radius: 16px;
+  position: relative;
 }
 
 .select-tab,
 .select-tab-container {
-    padding: 10px;
+  padding: 10px;
 }
 
 .input-container-wrapper {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .input-container {
-    background-color: rgb(19, 26, 42);
-    border-radius: 16px;
-    padding: 20px;
+  background-color: rgb(19, 26, 42);
+  border-radius: 16px;
+  padding: 20px;
 }
 
 .address-container {
-    height: 24px;
-    border-radius: 16px;
+  height: 24px;
+  border-radius: 16px;
 }
 
 .address {
-    color: #888;
+  color: #888;
 }
 
 input.input-element {
-    border-radius: 16px;
-    background: transparent;
-    outline: none;
-    width: 80%;
-    font-size: 36px;
-    color: #eee;
+  border-radius: 16px;
+  background: transparent;
+  outline: none;
+  width: 80%;
+  font-size: 36px;
+  color: #eee;
 }
 
 .input-element:focus-within::before {
-    background-color: rgba(184, 192, 220, 0.24);
+  background-color: rgba(184, 192, 220, 0.24);
 }
 
 .input-combine {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .hr {
-    border-width: 1px;
-    border-color: rgba(152, 161, 192, 0.24);
-    margin: 10px;
+  border-width: 1px;
+  border-color: rgba(152, 161, 192, 0.24);
+  margin: 10px;
 }
 
 #background-radial-gradient {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    pointer-events: none;
-    width: 200vw;
-    height: 200vh;
-    transform: translate(-50vw, -100vh);
-    z-index: -1;
-    width: 100vw;
-    height: 100vh;
-    transform: unset;
-    background: radial-gradient(
-            100% 100% at 50% 0%,
-            rgba(10, 41, 75, 0.7) 0%,
-            rgba(34, 30, 48, 0.655) 49.48%,
-            rgba(31, 33, 40, 0) 100%
-        ),
-        rgb(13, 14, 14);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  width: 200vw;
+  height: 200vh;
+  transform: translate(-50vw, -100vh);
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  transform: unset;
+  background: radial-gradient(100% 100% at 50% 0%,
+      rgba(10, 41, 75, 0.7) 0%,
+      rgba(34, 30, 48, 0.655) 49.48%,
+      rgba(31, 33, 40, 0) 100%),
+    rgb(13, 14, 14);
 }
 
 .button {
-    background-color: rgb(76, 130, 251) !important;
-    font-size: 20px !important;
-    font-weight: 600 !important;
-    color: rgba(255, 255, 255, 1) !important;
-    padding: 16px !important;
-    border-radius: 16px !important;
-    margin: 10px 0 !important;
+  background-color: rgb(76, 130, 251) !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 1) !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  margin: 10px 0 !important;
 }
 
 .btn-button {
-    padding: 5px 10px !important;
-    background-color: rgb(76, 130, 251) !important;
-    font-size: 20px !important;
-    font-weight: 600 !important;
-    color: rgba(255, 255, 255, 1) !important;
-    border-radius: 50px !important;
-    margin: 10px 0 !important;
+  padding: 5px 10px !important;
+  background-color: rgb(76, 130, 251) !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 1) !important;
+  border-radius: 50px !important;
+  margin: 10px 0 !important;
 }
 
 .button-wrapper {
-    width: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dropdown-menu.dropdown-menu-button {
-    width: 100%;
-    border-radius: 15px;
+  width: 100%;
+  border-radius: 15px;
 }
 
 .img-icon {
-    width: 24px;
-    height: 24px;
-    background: radial-gradient(white 60%, rgba(255, 255, 255, 0) calc(70% + 1px));
-    border-radius: 50%;
-    box-shadow: white 0 0 1px;
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(white 60%, rgba(255, 255, 255, 0) calc(70% + 1px));
+  border-radius: 50%;
+  box-shadow: white 0 0 1px;
 }
 
 .img-plus {
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    padding: 10px;
-    box-sizing: content-box;
-    border-radius: 50%;
-    background: rgb(19, 26, 42);
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 40%;
-    border: 2px solid rgba(152, 161, 192, 0.24);
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  padding: 10px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background: rgb(19, 26, 42);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 40%;
+  border: 2px solid rgba(152, 161, 192, 0.24);
 }
 
 .nav-universal [aria-selected="false"] {
-    color: #fff !important;
+  color: #fff !important;
+}
+
+.assets-wrapper {
+  color: #999;
+}
+
+.asset-item {
+  margin-bottom: 5px;
 }
