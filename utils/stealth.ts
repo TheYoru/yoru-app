@@ -1,7 +1,7 @@
 import { BigNumber, Contract, providers, utils } from "ethers";
-import { getTextRecordFromEns } from "./ens";
-import { KeyPair } from "@/umbra/classes/KeyPair";
-import { RandomNumber } from "@/umbra/classes/RandomNumber";
+import { useProvider } from "wagmi";
+import { KeyPair, RandomNumber } from "@umbracash/umbra-js/src";
+import { getTextRecordFromEns } from "@/pages/api/ens";
 import { Wallet } from 'ethers';
 
 const STEALTH_ANNOUNCEMENT_ABI = [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"receiver","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":false,"internalType":"bytes32","name":"pkx","type":"bytes32"},{"indexed":false,"internalType":"bytes32","name":"ciphertext","type":"bytes32"}],"name":"Announcement","type":"event"},{"inputs":[{"internalType":"address","name":"_recipient","type":"address"},{"internalType":"address","name":"_tokenAddr","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"},{"internalType":"bytes32","name":"_pkx","type":"bytes32"},{"internalType":"bytes32","name":"_ciphertext","type":"bytes32"}],"name":"sendERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_recipient","type":"address"},{"internalType":"address","name":"_tokenAddr","type":"address"},{"internalType":"uint256","name":"_tokenId","type":"uint256"},{"internalType":"bytes32","name":"_pkx","type":"bytes32"},{"internalType":"bytes32","name":"_ciphertext","type":"bytes32"}],"name":"sendERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address payable","name":"_recipient","type":"address"},{"internalType":"bytes32","name":"_pkx","type":"bytes32"},{"internalType":"bytes32","name":"_ciphertext","type":"bytes32"}],"name":"sendEth","outputs":[],"stateMutability":"payable","type":"function"}];

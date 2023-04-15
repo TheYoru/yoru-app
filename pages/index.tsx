@@ -13,13 +13,19 @@ import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
 import { useState, useEffect } from "react";
-import { useSignMessage } from "wagmi";
+import { useSignMessage, useProvider } from "wagmi";
 
-import useSWR from "swr";
 import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
 
-import { generateViewingPrivateKey } from './api/stealth'
+import { BigNumber, Contract, providers, utils } from "ethers";
+import { getDumpReceiverPkxAndCiphertext } from '@/utils/stealth'
+
+// import { generateViewingPrivateKey } from './api/stealth'
+function generateViewingPrivateKey(signatureData: string): string {
+  const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData)); 
+  return privateKey;
+}
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
@@ -30,12 +36,16 @@ function triggerSend() {}
 const message = "ethtokyo";
 
 export default function Home() {
+  const provider = useProvider();
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
     onSettled(data, error) {
       console.log('Settled', { data, error })
       const ppk = generateViewingPrivateKey(data)
+      console.log(ppk);
       saveToLocalStorage(ppk);
+      const result = getDumpReceiverPkxAndCiphertext(provider, ppk);
+      console.log(result);
     },
   });
 
