@@ -8,6 +8,7 @@ import { abi as yoruABI } from "./abis/Yoru.json"
 import { abi as walletFactoryABI } from "./abis/StealthWalletFactory.json"
 import { abi as entryPointABI } from "./abis/EntryPoint.json"
 
+const ETH_TOKEN_PLACHOLDER = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 const userOpHelperAddress = "0x63087b831D80Db6f65930339cFA38D4f7E486db3"
 const paymasterAddress = "0xb666fE2b562be86590c4DF43F12Ab1DBA9EC209C"
 const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
@@ -132,25 +133,48 @@ export async function getWithdrawUserOps(provider: any, assets: AssetInfo[], toA
     let userOps = []
     for (let asset of assets) {
         const walletOwner = new Wallet(asset.PrivateKey)
-        const userOpData = await userOpHelper.functions[
-            transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
-        ](
-            toAddress, // eth recipient
-            asset.Amount, // amount
-            walletOwner.address, // wallet owner
-            asset.Salt,
-            paymasterAddress,
-            Math.floor(Date.now() / 1000), // current timestamp
-            feeData.maxFeePerGas,
-            feeData.maxPriorityFeePerGas,
-        )
-        const userOp = [...userOpData[0]]
-        const userOpHash = userOpData[1]
-        const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
-        // put signature into user op
-        userOp[10] = userOpSignature
+        if (asset.AssetAddress.toLowerCase() == ETH_TOKEN_PLACHOLDER.toLowerCase()) {
+            const userOpData = await userOpHelper.functions[
+                transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
+            ](
+                toAddress, // eth recipient
+                asset.Amount, // amount
+                walletOwner.address, // wallet owner
+                asset.Salt,
+                paymasterAddress,
+                Math.floor(Date.now() / 1000), // current timestamp
+                feeData.maxFeePerGas,
+                feeData.maxPriorityFeePerGas,
+            )
+            const userOp = [...userOpData[0]]
+            const userOpHash = userOpData[1]
+            const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
+            // put signature into user op
+            userOp[10] = userOpSignature
 
-        userOps.push(userOp)
+            userOps.push(userOp)
+        } else {
+            const userOpData = await userOpHelper.functions[
+                transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
+            ](
+                asset.AssetAddress,
+                toAddress, // recipient
+                asset.Amount, // amount
+                walletOwner.address, // wallet owner
+                asset.Salt,
+                paymasterAddress,
+                Math.floor(Date.now() / 1000), // current timestamp
+                feeData.maxFeePerGas,
+                feeData.maxPriorityFeePerGas,
+            )
+            const userOp = [...userOpData[0]]
+            const userOpHash = userOpData[1]
+            const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
+            // put signature into user op
+            userOp[10] = userOpSignature
+
+            userOps.push(userOp)
+        }
     }
     return userOps
 }
