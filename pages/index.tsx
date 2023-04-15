@@ -6,13 +6,18 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { EnsIcon } from '@/components/ensIcon';
 import { LensIcon } from "@/components/LensIcon";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 function triggerSend() {}
 
 export default function Home() {
+
+  useEffect(() => {
+
+  })
+
   return (
     <main
       className="flex min-h-screen flex-col items-center justify-center p-24"
@@ -43,7 +48,7 @@ export default function Home() {
                   console.log(eventKey)
                 }
               }>
-                <Dropdown.Toggle variant="success" id="dropdown-query" ref={dropdownQuery}>
+                <Dropdown.Toggle variant="success" id="dropdown-query">
                   Query
                 </Dropdown.Toggle>
 
