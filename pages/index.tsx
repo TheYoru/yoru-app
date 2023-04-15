@@ -8,6 +8,7 @@ import { KeyPair } from "@/umbra/classes/KeyPair"
 import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
 import { PlusIcon } from "@/components/PlusIcon";
+import { QueryIcon } from "@/components/QueryIcon";
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
@@ -17,6 +18,7 @@ import { useSignMessage, useProvider, useContractWrite, usePrepareContractWrite,
 
 import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
+import { NftWrapper } from "@/components/NftWrapper";
 
 import { BigNumber, Contract, providers, utils } from "ethers";
 import { dumpObj } from '@/pages/api/ppk';
@@ -43,6 +45,7 @@ export default function Home() {
 
   const [stealPrivateK, setStealPrivateK] = useState("");
   const [sendAmount, setSendAmount] = useState("0");
+  const [commitAmount, setCommitAmount] = useState("0");
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
     onSettled(data, error) {
@@ -85,7 +88,7 @@ export default function Home() {
     ],
     overrides: {
       from: senderAddress,
-      value: utils.parseEther(sendAmount),
+      value: utils.parseEther(commitAmount),
     }
   });
 
@@ -95,6 +98,23 @@ export default function Home() {
     else
       return <UsdcWrapper value={amount} />
   }
+
+  const { config: erc20Config } = usePrepareContractWrite({
+    address: STEALTH_CONTRACT_ADDRESS,
+    abi: YoruAbi,
+    functionName: 'sendERC20',
+    args: [
+      targetObj?.receiver?.[0], 
+      "0x395faf30eC5DBEe560B8386704003cB6Cef50fCE",
+      utils.parseEther(commitAmount),
+      targetObj?.pkx, 
+      targetObj?.ciphertext
+    ],
+    overrides: {
+      from: senderAddress,
+    }
+  });
+  const { data: contractErc20Data, isLoading: contractErc20IsLoading, isSuccess: contractErc20IsSuccess, write: contractErc20Write } = useContractWrite(erc20Config)
 
   const { data: contractData, isLoading: contractIsLoading, isSuccess: contractIsSuccess, write: contractWrite } = useContractWrite(config)
 
@@ -132,14 +152,32 @@ export default function Home() {
     const ppk = localStorage.getItem("setStealPrivateK");
     const targetPubKey = new KeyPair(ppk).publicKeyHex
     const result = await getDumpReceiverPkxAndCiphertext(provider, targetPubKey); //use to send address
+    console.log('send eth..')
     console.log(result);
     Promise.resolve(result).then((value) => { 
       setTargetAddress(value.receiver[0]);
       setTargetObj(value);
+      setCommitAmount(sendAmount);
       console.log(`targetAddress: ${value.receiver[0]} - ${targetObj}`);
       contractWrite?.();
     });
     
+  }
+
+  async function sendERC20() {
+    console.log(sendAmount.toString())
+    const ppk = localStorage.getItem("setStealPrivateK");
+    const targetPubKey = new KeyPair(ppk).publicKeyHex
+    const result = await getDumpReceiverPkxAndCiphertext(provider, targetPubKey); //use to send address
+    console.log('send erc20..')
+    console.log(result);
+    Promise.resolve(result).then((value) => { 
+      setTargetAddress(value.receiver[0]);
+      setTargetObj(value);
+      setCommitAmount(sendAmount);
+      console.log(`targetAddress: ${value.receiver[0]} - ${targetObj}`);
+      contractErc20Write?.();
+    });
   }
 
   async function scanTokens() {
@@ -158,6 +196,27 @@ export default function Home() {
     const sendResult = await sendUserOpsToEP(signer, userOp, senderAddress)
     
   }
+
+  const queryServices = []
+
+  function changeService() {
+
+  }
+
+  const supportTokens = [
+    'eth',
+    'usdc',
+    // 'nft'
+  ];
+
+  function changeToken() {
+    const currentToken = selectedToken;
+    const currentIndex = supportTokens.indexOf(currentToken);
+    setSelectedToken(supportTokens[(currentIndex + 1) % supportTokens.length]);
+    console.log(selectedToken);
+  }
+
+  const [selectedToken, setSelectedToken] = useState(supportTokens[0]);
 
   useEffect(() => {
     let value;
@@ -214,7 +273,12 @@ export default function Home() {
                       id="did-input"
                       name="did-input"
                     />
-                    <button className="btn-button button-wrapper" type="submit">
+                    <button type="submit">
+                      <QueryIcon width="36px" height="36px" />
+                    </button>
+                    <button className="btn-button button-wrapper" onClick={()=>{
+                      changeService();
+                    }}>
                       <EnsIcon />
                       <span>ENS</span>
                     </button>
@@ -257,7 +321,7 @@ export default function Home() {
                 <div className="input-combine">
                   <input className="input-element" type="text" value={sendAmount} onChange={(e)=>{
                     console.log(e.target.value);
-                    if (e.target.value !== null)
+                    if (e.target?.value !== null || e.target.value !== undefined || e.target.value !== "")
                       setSendAmount(e.target.value);
                     else {
                       setSendAmount("0");
@@ -289,8 +353,12 @@ export default function Home() {
                       </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown> */}
-                  <button className="btn-button button-wrapper">
-                    <EthWrapper />
+                  <button className="btn-button button-wrapper" onClick={()=>{
+                    changeToken();
+                  }}>
+                    {selectedToken === 'eth' && <EthWrapper />}
+                    {selectedToken === 'usdc' && <UsdcWrapper />}
+                    {selectedToken === 'nft' && <NftWrapper />}
                   </button>
                 </div>
                 <div className="address-container">
@@ -299,7 +367,10 @@ export default function Home() {
               </div>
             </div>
             <button className="button w-full" onClick={()=>{
-              sendEth();
+              if (selectedToken === 'eth')
+                sendEth();
+              else
+                sendERC20();
             }}>Send</button>
           </Tab>
           <Tab eventKey="receive" title="Receive">
