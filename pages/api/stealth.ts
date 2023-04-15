@@ -6,9 +6,11 @@ import { RandomNumber } from "@/umbra/classes/RandomNumber"
 import { abi as userOpHelperABI } from "./abis/UserOpHelper.json"
 import { abi as yoruABI } from "./abis/Yoru.json"
 import { abi as walletFactoryABI } from "./abis/StealthWalletFactory.json"
+import { abi as entryPointABI } from "./abis/EntryPoint.json"
 
 const userOpHelperAddress = "0x63087b831D80Db6f65930339cFA38D4f7E486db3"
 const paymasterAddress = "0xb666fE2b562be86590c4DF43F12Ab1DBA9EC209C"
+const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
 const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
 const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
 const STEALTH_PUBKEY = "publickey"
@@ -140,6 +142,11 @@ export async function getWithdrawUserOp(provider: any, asset: AssetInfo, toAddre
     userOp[10] = userOpSignature
 
     return userOp
+}
+
+export async function sendUserOpsToEP(provider: any, userOps: any, beneficiary: any) {
+    const entryPoint = new Contract(entryPointAddress, entryPointABI, provider)
+    await entryPoint.handleOps(userOps, beneficiary)
 }
 
 async function getAAAddress(
