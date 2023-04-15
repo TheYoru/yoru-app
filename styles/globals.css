@@ -70,6 +70,10 @@ input.input-element {
   color: #eee;
 }
 
+.input-element:focus-within::before {
+  background-color: rgba(184, 192, 220, 0.24);
+}
+
 .input-combine {
   display: flex;
   flex-direction: row;
@@ -102,14 +106,29 @@ input.input-element {
 }
 
 
-.button, .btn-button {
-  background-color: rgb(76, 130, 251);
-  font-size: 20px;
-  font-weight: 600;
-  color: rgba(255,255,255,1);
-  padding: 16px;
-  border-radius: 16px;
-  margin: 10px 0;
+.button {
+  background-color: rgb(76, 130, 251)!important;
+  font-size: 20px!important;
+  font-weight: 600!important;
+  color: rgba(255,255,255,1)!important;
+  padding: 16px!important;
+  border-radius: 16px!important;
+  margin: 10px 0!important;
+}
+
+.btn-button {
+  padding: 5px 10px!important;
+  background-color: rgb(76, 130, 251)!important;
+  font-size: 20px!important;
+  font-weight: 600!important;
+  color: rgba(255,255,255,1)!important;
+  border-radius: 50px!important;
+  margin: 10px 0!important;
+}
+
+.dropdown-menu.dropdown-menu-button {
+  width: 100%;
+  border-radius: 15px;;
 }
 
 .img-icon {

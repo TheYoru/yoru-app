@@ -6,8 +6,9 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
 import { PlusIcon } from "@/components/PlusIcon";
-import { EthIcon } from "@/components/EthIcon";
-import { UsdcIcon } from "@/components/UsdcIcon";
+
+import * as Select from '@radix-ui/react-select';
+
 
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
@@ -15,6 +16,8 @@ import Tabs from "react-bootstrap/Tabs";
 import { useState, useEffect } from "react";
 
 import useSWR from "swr";
+import { UsdcWrapper } from "@/components/UsdcWrapper";
+import { EthWrapper } from "@/components/EthWrapper";
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
@@ -23,15 +26,15 @@ const inter = Inter({ subsets: ["latin"] });
 function triggerSend() {}
 
 export default function Home() {
-  // const { data, error } = useSWR('/api/query-ens', fetcher)
+  const { data, error } = useSWR('/api/query-ens', fetcher)
   // const { ensResult, ensError } = useSWR('/api/query-ens', fetcher)
+  // const { data, error } = useSWR('/api/query-lens', fetcher)
 
   function queryENS() {
-    const { data, error } = useSWR('/api/query-ens', fetcher)
   }
 
   function queryLens() {
-    const { data, error } = useSWR('/api/query-lens', fetcher)
+    
   }
 
   function scanTokens() {
@@ -86,11 +89,11 @@ export default function Home() {
                       }
                     }}
                   >
-                    <Dropdown.Toggle variant="success" id="dropdown-query">
-                      Query
+                    <Dropdown.Toggle variant="button" id="dropdown-query">
+                      Find Address
                     </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
+                    <Dropdown.Menu variant="button">
                       <Dropdown.Item eventKey="lens">
                         <div className="input-combine">
                           <LensIcon />
@@ -124,24 +127,23 @@ export default function Home() {
                       console.log(eventKey);
                       if (eventKey === "lens") {
                       } else {
+                        queryENS();
                       }
                     }}
                   >
-                    <Dropdown.Toggle variant="success" id="dropdown-query">
+                    <Dropdown.Toggle variant="button" id="dropdown-query">
                       Select Tokens
                     </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
+                    <Dropdown.Menu variant="button">
                       <Dropdown.Item eventKey="eth">
                         <div className="input-combine">
-                          <EthIcon width="36px" height="36px" />
-                          <span>ETH</span>
+                          <EthWrapper />
                         </div>
                       </Dropdown.Item>
                       <Dropdown.Item eventKey="usdc">
                         <div className="input-combine">
-                          <UsdcIcon width="36px" height="36px" />
-                          <span>USDC</span>
+                          <UsdcWrapper />
                         </div>
                       </Dropdown.Item>
                     </Dropdown.Menu>

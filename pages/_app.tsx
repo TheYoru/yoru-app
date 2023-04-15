@@ -22,9 +22,10 @@ const { chains, provider, webSocketProvider } = configureChains(
   [
     mainnet,
     polygon,
-    optimism,
-    arbitrum,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
+    // optimism,
+    // arbitrum,
+    goerli
+    // ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
   ],
   [publicProvider()]
 );
