@@ -17,7 +17,6 @@ export const STEALTH_PUBKEY = "publickey"
 export const contractBlock = 8833960
 const transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
     "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256)"
-
 const transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
     "transferETH_withInitcode_withPaymaster_UserOp(address,uint256,address,uint256,address,uint256,uint256,uint256)"
 
@@ -157,6 +156,7 @@ export async function getWithdrawUserOps(provider: any, assets: AssetInfo[], toA
 }
 
 export async function sendUserOpsToEP(provider: any, userOps: any, beneficiary: any) {
+  console.log(userOps)
     const entryPoint = new Contract(entryPointAddress, entryPointABI, provider)
     await entryPoint.handleOps(userOps, beneficiary)
 }

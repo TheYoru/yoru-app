@@ -11,7 +11,7 @@ import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
 import { useState, useEffect } from "react";
-import { useSignMessage, useProvider, useContractWrite, usePrepareContractWrite, useAccount, useBlockNumber } from "wagmi";
+import { useSignMessage, useProvider, useContractWrite, usePrepareContractWrite, useAccount, useBlockNumber, useSigner } from "wagmi";
 
 import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
@@ -20,7 +20,7 @@ import { BigNumber, Contract, providers, utils } from "ethers";
 import { dumpObj } from '@/pages/api/ppk';
 import { abi as YoruAbi } from '@/pages/api/abis/Yoru.json'
 
-import { getDumpReceiverPkxAndCiphertext, STEALTH_CONTRACT_ADDRESS, getAssets, contractBlock, getWithdrawUserOp, sendUserOpsToEP } from '@/pages/api/stealth';
+import { getDumpReceiverPkxAndCiphertext, STEALTH_CONTRACT_ADDRESS, getAssets, contractBlock, getWithdrawUserOps, sendUserOpsToEP } from '@/pages/api/stealth';
 
 // import { generateViewingPrivateKey } from './api/stealth'
 function generateViewingPrivateKey(signatureData: string): string {
@@ -58,6 +58,8 @@ export default function Home() {
   const { data: blockData, isError: blockIsError, isLoading: blockIsLoading } = useBlockNumber()
 
   const { address: senderAddress, isConnecting, isDisconnected } = useAccount()
+
+  const { data: signer, isError: signerIsError, isLoading: signerIsLoading } = useSigner()
 
 
   const { config } = usePrepareContractWrite({
@@ -133,8 +135,8 @@ export default function Home() {
 
   async function withdraw() {
     console.log('withdraw called')
-    const userOp = await getWithdrawUserOp(provider, assets[0], address);
-    const sendResult = await sendUserOpsToEP(provider, userOp, address)
+    const userOp = await getWithdrawUserOps(provider, assets, senderAddress);
+    const sendResult = await sendUserOpsToEP(signer, userOp, senderAddress)
     
   }
 
