@@ -11,9 +11,10 @@ import { abi as entryPointABI } from "./abis/EntryPoint.json"
 const userOpHelperAddress = "0x63087b831D80Db6f65930339cFA38D4f7E486db3"
 const paymasterAddress = "0xb666fE2b562be86590c4DF43F12Ab1DBA9EC209C"
 const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
-const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
-const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
-const STEALTH_PUBKEY = "publickey"
+export const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
+export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
+export const STEALTH_PUBKEY = "publickey"
+export const contractBlock = 8833960;
 
 export interface AssetInfo {
     AccountAddress: string
@@ -44,39 +45,45 @@ export async function getAssets(
     fromBlock: number,
     toBlock: number,
 ) {
-    const keypair = new KeyPair(privateKey)
-    const announcements = await fetchAnnouncements(provider, fromBlock, toBlock)
-    let assetInfos: AssetInfo[] = []
-    for (var i = 0; i < announcements.length; i++) {
-        const announce = announcements[i]
-        const event = announce.args
-        if (event != undefined) {
-            const pkx = event["pkx"]
-            const publicKey = KeyPair.getUncompressedFromX(pkx)
-            const newKeypair = keypair.mulPublicKey(publicKey)
-            const ciphertext = event["ciphertext"]
-            const randomNumberInHex = newKeypair.decrypt({
-                ephemeralPublicKey: publicKey,
-                ciphertext: ciphertext,
-            })
-            const newPrivateKey = keypair.mulPrivateKey(randomNumberInHex).privateKeyHex
-            if (newPrivateKey != undefined) {
-                const aaAddr = await getAAAddress(provider, newPrivateKey, randomNumberInHex)
-                const salt = utils.keccak256(randomNumberInHex)
-                if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
-                    const amount: BigNumber = event["amount"]
-                    assetInfos.push({
-                        AccountAddress: aaAddr,
-                        AssetAddress: event["token"],
-                        Amount: amount,
-                        Salt: salt,
-                        PrivateKey: newPrivateKey,
-                    })
-                }
-            }
+  const keypair = new KeyPair(privateKey);
+  const announcements = await fetchAnnouncements(provider, fromBlock, toBlock);
+  let assetInfos: AssetInfo[] = [];
+  for (var i = 0; i < announcements.length; i++) {
+    const announce = announcements[i];
+    const event = announce.args;
+    if (event != undefined) {
+      const pkx = event["pkx"];
+      console.log(`tx: ${announce.transactionHash}, pkx: ${pkx}`);
+      const publicKey = KeyPair.getUncompressedFromX(pkx);
+      console.log(`publicKey: ${publicKey}`);
+      const ciphertext = event["ciphertext"];
+      const randomNumberInHex = keypair.decrypt({
+        ephemeralPublicKey: publicKey,
+        ciphertext: ciphertext,
+      });
+      const newKeypair =
+        keypair.mulPrivateKey(randomNumberInHex);
+
+        const aaAddr = await getAAAddress(
+          provider,
+          newKeypair.address,
+          randomNumberInHex
+        );
+        const salt = utils.keccak256(randomNumberInHex)
+        console.log(newKeypair);
+        if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
+          const amount: BigNumber = event["amount"];
+          assetInfos.push({
+            AssetAddress: event["token"],
+            Amount: amount,
+            PrivateKey: newKeypair.privateKeyHex!,
+            AccountAddress: aaAddr,
+            Salt: salt,
+          });
         }
     }
-    return assetInfos
+  }
+  return assetInfos
 }
 
 export async function getReceiverPkxAndCiphertext(provider: providers.Provider, ens: string) {
@@ -156,6 +163,6 @@ async function getAAAddress(
 ) {
     const salt = utils.keccak256(randomNumberInHex)
     const factoryContract = new Contract(STEALTH_FACTORY_ADDRESS, walletFactoryABI, provider)
-    const abstractAccountAddr: string = await factoryContract.getAddress(ownerAddr, salt)
+    const abstractAccountAddr: string = await factoryContract.callstatic.getAddress(ownerAddr, salt)
     return abstractAccountAddr
 }

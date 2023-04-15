@@ -1,5 +1,5 @@
 const ppk = "0x7a1a0e040f1b0f883424843d3406744be3741819cc77f574f0fc33b9cc1adf87"
-const dumpObj = {
+export const dumpObj = {
     receiver: ["0x3b54b268e79872ea5c9c1337E256F63C18bbd1BF"],
     pkx: "0xe50d3b209f00c4a74ae375b16b812b3cce76961c89e93169c39649159b8201f9",
     ciphertext: "0xeeb46fcb489ce13d2a7d53a41006e2b9683e4ab43d92df45ae490e033a174c16",
