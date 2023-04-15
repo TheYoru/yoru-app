@@ -254,7 +254,8 @@ export async function getDumpReceiverPkxAndCiphertext(
   ppk: string
 ) {
   // get pkx and cipher text
-  const pubkey = new Wallet(ppk).publicKey;
+  const pubkey = new KeyPair(ppk).publicKeyHex;
+  console.log(pubkey);
   const keypair = new KeyPair(pubkey);
   const randomNumber = new RandomNumber();
   const encrypted = keypair.encrypt(randomNumber);

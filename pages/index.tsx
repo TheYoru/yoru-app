@@ -7,8 +7,6 @@ import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
 import { PlusIcon } from "@/components/PlusIcon";
 
-import * as Select from "@radix-ui/react-select";
-
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 
@@ -19,7 +17,8 @@ import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
 
 import { BigNumber, Contract, providers, utils } from "ethers";
-import { getDumpReceiverPkxAndCiphertext } from "@/utils/stealth";
+
+import { getDumpReceiverPkxAndCiphertext } from '@/pages/api/stealth';
 
 // import { generateViewingPrivateKey } from './api/stealth'
 function generateViewingPrivateKey(signatureData: string): string {
@@ -45,8 +44,10 @@ export default function Home() {
       console.log(ppk);
       saveToLocalStorage(ppk);
       const result = getDumpReceiverPkxAndCiphertext(provider, ppk);
-      console.log(result);
-    },
+      Promise.resolve(result).then((value) => {
+        console.log(value);
+      });
+    }
   });
 
   const [address, setAddress] = useState(null);
@@ -75,7 +76,9 @@ export default function Home() {
     setAddress(result);
   }
 
-  function queryLens() {}
+  function sendEth() {
+    console.log("sendEth");
+  }
 
   function scanTokens() {
     console.log("scanTokens");
@@ -94,8 +97,8 @@ export default function Home() {
   }, []);
 
   // When user submits the form, save the favorite number to the local storage
-  const saveToLocalStorage = (stealPrivateK) => {
-    localStorage.setItem("setStealPrivateK", stealPrivateK);
+  const saveToLocalStorage = (stealPrivate) => {
+    localStorage.setItem("setStealPrivateK", stealPrivate)
   };
 
   return (
@@ -213,7 +216,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <button className="button w-full">Send</button>
+            <button className="button w-full" onClick={sendEth}>Send</button>
           </Tab>
           <Tab eventKey="receive" title="Receive">
             <button

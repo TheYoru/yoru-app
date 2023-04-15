@@ -1,0 +1,17 @@
+const ppk = "0x7a1a0e040f1b0f883424843d3406744be3741819cc77f574f0fc33b9cc1adf87";
+const dumpObj = {
+    "receiver": [
+        "0x3b54b268e79872ea5c9c1337E256F63C18bbd1BF"
+    ],
+    "pkx": "0xe50d3b209f00c4a74ae375b16b812b3cce76961c89e93169c39649159b8201f9",
+    "ciphertext": "0xeeb46fcb489ce13d2a7d53a41006e2b9683e4ab43d92df45ae490e033a174c16"
+};
+
+const sigendMessage = {
+    "data": "0xe059a712bb7ac918e05c21132e56517cab81e6eee1f181f31d61bf54b143ec6219f24b42cfd75785f73770d5ee94c6ecbcdb0526435caab78356a376de647acd1b"
+}
+
+const publicKey = "0x045d6d783d90c5433acd79be329d847d9129d2dbfb1ada053beb72bf5f64fb3e000306342b8270fa2ced26920ad7f49e55c6c3df982bd48a2d224b739f8627e092";
+
+
+export default dumpObj;
