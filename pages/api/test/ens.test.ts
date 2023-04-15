@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { getAddrFromEns, getTextRecordFromEns } from '../ens';
-import { utils } from 'ethers';
-import { KeyPair } from '@umbracash/umbra-js/src';
 
 describe("ens functions", () => {
     it('return the correct address', async () => {

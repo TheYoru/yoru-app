@@ -16,7 +16,7 @@
     "@types/node": "18.15.11",
     "@types/react": "18.0.35",
     "@types/react-dom": "18.0.11",
-    "@umbracash/umbra-js": "https://gitpkg.now.sh/ScopeLift/umbra-protocol/umbra-js?master",
+    "@unstoppabledomains/resolution": "^9.0.0",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "10.4.14",
     "bootstrap": "^5.2.3",
