@@ -1,0 +1,32 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+env:
+  FOUNDRY_PROFILE: ci
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Yoru project
+    runs-on: ubuntu-latest
+    environment: CI
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Format
+        run: yarn run check-pretty
+
+      - name: Lint
+        run: |
+          yarn run lint
