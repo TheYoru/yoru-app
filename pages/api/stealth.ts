@@ -4,157 +4,13 @@ import { KeyPair } from "@/umbra/classes/KeyPair"
 import { RandomNumber } from "@/umbra/classes/RandomNumber"
 
 import { abi as userOpHelperABI } from "./abis/UserOpHelper.json"
+import { abi as yoruABI } from "./abis/Yoru.json"
+import { abi as walletFactoryABI } from "./abis/StealthWalletFactory.json"
 
 const userOpHelperAddress = "0x63087b831D80Db6f65930339cFA38D4f7E486db3"
 const paymasterAddress = "0xb666fE2b562be86590c4DF43F12Ab1DBA9EC209C"
-
-const STEALTH_ANNOUNCEMENT_ABI = [
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: true,
-                internalType: "address",
-                name: "receiver",
-                type: "address",
-            },
-            {
-                indexed: false,
-                internalType: "uint256",
-                name: "amount",
-                type: "uint256",
-            },
-            {
-                indexed: true,
-                internalType: "address",
-                name: "token",
-                type: "address",
-            },
-            { indexed: false, internalType: "bytes32", name: "pkx", type: "bytes32" },
-            {
-                indexed: false,
-                internalType: "bytes32",
-                name: "ciphertext",
-                type: "bytes32",
-            },
-        ],
-        name: "Announcement",
-        type: "event",
-    },
-    {
-        inputs: [
-            { internalType: "address", name: "_recipient", type: "address" },
-            { internalType: "address", name: "_tokenAddr", type: "address" },
-            { internalType: "uint256", name: "_amount", type: "uint256" },
-            { internalType: "bytes32", name: "_pkx", type: "bytes32" },
-            { internalType: "bytes32", name: "_ciphertext", type: "bytes32" },
-        ],
-        name: "sendERC20",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            { internalType: "address", name: "_recipient", type: "address" },
-            { internalType: "address", name: "_tokenAddr", type: "address" },
-            { internalType: "uint256", name: "_tokenId", type: "uint256" },
-            { internalType: "bytes32", name: "_pkx", type: "bytes32" },
-            { internalType: "bytes32", name: "_ciphertext", type: "bytes32" },
-        ],
-        name: "sendERC721",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            { internalType: "address payable", name: "_recipient", type: "address" },
-            { internalType: "bytes32", name: "_pkx", type: "bytes32" },
-            { internalType: "bytes32", name: "_ciphertext", type: "bytes32" },
-        ],
-        name: "sendEth",
-        outputs: [],
-        stateMutability: "payable",
-        type: "function",
-    },
-]
 const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
 const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
-const STEALTH_FACTORY_ABI = [
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "_entryPoint",
-                type: "address",
-            },
-        ],
-        stateMutability: "nonpayable",
-        type: "constructor",
-    },
-    {
-        inputs: [],
-        name: "EntryPoint",
-        outputs: [
-            {
-                internalType: "address",
-                name: "",
-                type: "address",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "owner",
-                type: "address",
-            },
-            {
-                internalType: "uint256",
-                name: "salt",
-                type: "uint256",
-            },
-        ],
-        name: "createAccount",
-        outputs: [
-            {
-                internalType: "contract StealthWallet",
-                name: "ret",
-                type: "address",
-            },
-        ],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "owner",
-                type: "address",
-            },
-            {
-                internalType: "uint256",
-                name: "salt",
-                type: "uint256",
-            },
-        ],
-        name: "getAddress",
-        outputs: [
-            {
-                internalType: "address",
-                name: "",
-                type: "address",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-]
 const STEALTH_PUBKEY = "publickey"
 
 export interface AssetInfo {
@@ -175,11 +31,7 @@ async function fetchAnnouncements(
     fromBlock: number,
     toBlock: number,
 ) {
-    const stealthContract = new Contract(
-        STEALTH_CONTRACT_ADDRESS,
-        STEALTH_ANNOUNCEMENT_ABI,
-        provider,
-    )
+    const stealthContract = new Contract(STEALTH_CONTRACT_ADDRESS, yoruABI, provider)
     const announcement = stealthContract.filters.Announcement()
     return stealthContract.queryFilter(announcement, fromBlock, toBlock)
 }
@@ -263,13 +115,39 @@ export async function getDumpReceiverPkxAndCiphertext(provider: providers.Provid
     }
 }
 
+export async function getWithdrawUserOp(provider: any, asset: AssetInfo, toAddress: string) {
+    const userOpHelper = new Contract(userOpHelperAddress, userOpHelperABI, provider)
+    const feeData = await provider.getFeeData()
+
+    const walletOwner = new Wallet(asset.PrivateKey)
+    const userOpData =
+        await userOpHelper.callstatic.transferERC20_withInitcode_withPaymaster_UserOp(
+            asset.AssetAddress,
+            toAddress, // token recipient
+            asset.Amount, // token amount
+            walletOwner.address, // wallet owner
+            asset.Salt,
+            paymasterAddress,
+            Math.floor(Date.now() / 1000), // current timestamp
+            feeData.maxFeePerGas,
+            feeData.maxPriorityFeePerGas,
+        )
+    const userOp = [...userOpData[0]]
+    const userOpHash = userOpData[1]
+    const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
+    // put signature into user op
+    userOp[10] = userOpSignature
+
+    return userOp
+}
+
 async function getAAAddress(
     provider: providers.Provider,
     ownerAddr: string,
     randomNumberInHex: string,
 ) {
     const salt = utils.keccak256(randomNumberInHex)
-    const factoryContract = new Contract(STEALTH_FACTORY_ADDRESS, STEALTH_FACTORY_ABI, provider)
+    const factoryContract = new Contract(STEALTH_FACTORY_ADDRESS, walletFactoryABI, provider)
     const abstractAccountAddr: string = await factoryContract.getAddress(ownerAddr, salt)
     return abstractAccountAddr
 }
