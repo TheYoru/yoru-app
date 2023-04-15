@@ -83,6 +83,11 @@ const STEALTH_FACTORY_ABI =
   ];
 const STEALTH_PUBKEY = "publickey";
 
+export function generateViewingPrivateKey(signatureData: string): string {
+    const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData)); 
+    return privateKey;
+}
+
 export async function fetchAnnouncements(fromBlock: number, toBlock: number) {
     const provider = useProvider();
     const stealthContract = new Contract(STEALTH_CONTRACT_ADDRESS, STEALTH_ANNOUNCEMENT_ABI, provider);
