@@ -15,7 +15,7 @@ const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
 export const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
 export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
 export const STEALTH_PUBKEY = "publickey"
-export const contractBlock = 8835950
+export const contractBlock = 8836133
 const transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
     "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256)"
 const transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
