@@ -1,22 +1,22 @@
-import '@/styles/globals.css'
-import '@rainbow-me/rainbowkit/styles.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "@/styles/globals.css";
+import "@rainbow-me/rainbowkit/styles.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import type { AppProps } from 'next/app'
+import type { AppProps } from "next/app";
 
 import {
   RainbowKitProvider,
   getDefaultWallets,
   connectorsForWallets,
-} from '@rainbow-me/rainbowkit';
+} from "@rainbow-me/rainbowkit";
 import {
   argentWallet,
   trustWallet,
   ledgerWallet,
-} from '@rainbow-me/rainbowkit/wallets';
-import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { mainnet, polygon, optimism, arbitrum, goerli } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
+} from "@rainbow-me/rainbowkit/wallets";
+import { configureChains, createClient, WagmiConfig } from "wagmi";
+import { mainnet, polygon, optimism, arbitrum, goerli } from "wagmi/chains";
+import { publicProvider } from "wagmi/providers/public";
 
 const { chains, provider, webSocketProvider } = configureChains(
   [
@@ -24,25 +24,25 @@ const { chains, provider, webSocketProvider } = configureChains(
     polygon,
     // optimism,
     // arbitrum,
-    goerli
+    goerli,
     // ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [goerli] : []),
   ],
   [publicProvider()]
 );
 
 const { wallets } = getDefaultWallets({
-  appName: 'RainbowKit demo',
+  appName: "RainbowKit demo",
   chains,
 });
 
 const demoAppInfo = {
-  appName: 'Rainbowkit Demo',
+  appName: "Rainbowkit Demo",
 };
 
 const connectors = connectorsForWallets([
   ...wallets,
   {
-    groupName: 'Other',
+    groupName: "Other",
     wallets: [
       argentWallet({ chains }),
       trustWallet({ chains }),

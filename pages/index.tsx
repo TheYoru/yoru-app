@@ -19,11 +19,11 @@ import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
 
 import { BigNumber, Contract, providers, utils } from "ethers";
-import { getDumpReceiverPkxAndCiphertext } from '@/utils/stealth'
+import { getDumpReceiverPkxAndCiphertext } from "@/utils/stealth";
 
 // import { generateViewingPrivateKey } from './api/stealth'
 function generateViewingPrivateKey(signatureData: string): string {
-  const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData)); 
+  const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData));
   return privateKey;
 }
 
@@ -40,8 +40,8 @@ export default function Home() {
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
     onSettled(data, error) {
-      console.log('Settled', { data, error })
-      const ppk = generateViewingPrivateKey(data)
+      console.log("Settled", { data, error });
+      const ppk = generateViewingPrivateKey(data);
       console.log(ppk);
       saveToLocalStorage(ppk);
       const result = getDumpReceiverPkxAndCiphertext(provider, ppk);
@@ -84,20 +84,19 @@ export default function Home() {
   const [key, setKey] = useState("send");
   const [scanResults, setScanResults] = useState(null);
 
-
-  const [stealPrivateK, setStealPrivateK] = useState("")
+  const [stealPrivateK, setStealPrivateK] = useState("");
 
   useEffect(() => {
-    let value
+    let value;
     // Get the value from local storage if it exists
-    value = localStorage.getItem("stealPrivateK") || ""
-    setStealPrivateK(value)
-  }, [])
+    value = localStorage.getItem("stealPrivateK") || "";
+    setStealPrivateK(value);
+  }, []);
 
   // When user submits the form, save the favorite number to the local storage
   const saveToLocalStorage = (stealPrivateK) => {
-    localStorage.setItem("setStealPrivateK", stealPrivateK)
-  }
+    localStorage.setItem("setStealPrivateK", stealPrivateK);
+  };
 
   return (
     <main
@@ -206,7 +205,7 @@ export default function Home() {
                     </Dropdown.Menu>
                   </Dropdown> */}
                   <button className="btn-button button-wrapper" type="submit">
-                      <EthWrapper />
+                    <EthWrapper />
                   </button>
                 </div>
                 <div className="address-container">
