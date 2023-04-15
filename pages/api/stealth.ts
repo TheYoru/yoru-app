@@ -156,9 +156,10 @@ export async function getWithdrawUserOps(provider: any, assets: AssetInfo[], toA
 }
 
 export async function sendUserOpsToEP(provider: any, userOps: any, beneficiary: any) {
-  console.log(userOps)
+    console.log(userOps)
     const entryPoint = new Contract(entryPointAddress, entryPointABI, provider)
     await entryPoint.handleOps(userOps, beneficiary)
+    // await entryPoint.functions["handleOps((address,uint256,bytes,bytes,uint256,uint256,uint256,uint256,uint256,bytes,bytes)[],address)"](userOps, beneficiary);
 }
 
 async function getAAAddress(
