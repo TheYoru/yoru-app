@@ -18,8 +18,9 @@ import { EthWrapper } from "@/components/EthWrapper";
 
 import { BigNumber, Contract, providers, utils } from "ethers";
 import { dumpObj } from '@/pages/api/ppk';
+import { abi as YoruAbi } from '@/pages/api/abis/Yoru.json'
 
-import { getDumpReceiverPkxAndCiphertext, STEALTH_CONTRACT_ADDRESS, STEALTH_ANNOUNCEMENT_ABI, getAssets, contractBlock } from '@/pages/api/stealth';
+import { getDumpReceiverPkxAndCiphertext, STEALTH_CONTRACT_ADDRESS, getAssets, contractBlock } from '@/pages/api/stealth';
 
 // import { generateViewingPrivateKey } from './api/stealth'
 function generateViewingPrivateKey(signatureData: string): string {
@@ -56,7 +57,7 @@ export default function Home() {
 
   const { config } = usePrepareContractWrite({
     address: STEALTH_CONTRACT_ADDRESS,
-    abi: STEALTH_ANNOUNCEMENT_ABI,
+    abi: YoruAbi,
     functionName: 'sendEth',
     args: [
       dumpObj.receiver[0], 

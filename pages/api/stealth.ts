@@ -70,8 +70,9 @@ export async function getAssets(
           randomNumberInHex
         );
         const salt = utils.keccak256(randomNumberInHex)
+        console.log(aaAddr);
         console.log(newKeypair);
-        if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
+        if (aaAddr[0].toLowerCase() == event["receiver"].toLowerCase()) {
           const amount: BigNumber = event["amount"];
           assetInfos.push({
             AssetAddress: event["token"],
@@ -163,6 +164,6 @@ async function getAAAddress(
 ) {
     const salt = utils.keccak256(randomNumberInHex)
     const factoryContract = new Contract(STEALTH_FACTORY_ADDRESS, walletFactoryABI, provider)
-    const abstractAccountAddr: string = await factoryContract.callstatic.getAddress(ownerAddr, salt)
+    const abstractAccountAddr: string = await factoryContract.functions["getAddress(address,uint256)"](ownerAddr, salt)
     return abstractAccountAddr
 }
