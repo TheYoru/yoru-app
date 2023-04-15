@@ -15,6 +15,8 @@ export const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE7
 export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
 export const STEALTH_PUBKEY = "publickey"
 export const contractBlock = 8833960
+const transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
+    "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256]"
 
 export interface AssetInfo {
     AccountAddress: string
@@ -121,13 +123,16 @@ export async function getDumpReceiverPkxAndCiphertext(provider: providers.Provid
     }
 }
 
-export async function getWithdrawUserOp(provider: any, asset: AssetInfo, toAddress: string) {
+export async function getWithdrawUserOps(provider: any, assets: AssetInfo[], toAddress: string) {
     const userOpHelper = new Contract(userOpHelperAddress, userOpHelperABI, provider)
     const feeData = await provider.getFeeData()
 
-    const walletOwner = new Wallet(asset.PrivateKey)
-    const userOpData =
-        await userOpHelper.callstatic.transferERC20_withInitcode_withPaymaster_UserOp(
+    let userOps = []
+    for (let asset of assets) {
+        const walletOwner = new Wallet(asset.PrivateKey)
+        const userOpData = await userOpHelper.functions[
+            transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG
+        ](
             asset.AssetAddress,
             toAddress, // token recipient
             asset.Amount, // token amount
@@ -138,13 +143,15 @@ export async function getWithdrawUserOp(provider: any, asset: AssetInfo, toAddre
             feeData.maxFeePerGas,
             feeData.maxPriorityFeePerGas,
         )
-    const userOp = [...userOpData[0]]
-    const userOpHash = userOpData[1]
-    const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
-    // put signature into user op
-    userOp[10] = userOpSignature
+        const userOp = [...userOpData[0]]
+        const userOpHash = userOpData[1]
+        const userOpSignature = await walletOwner.signMessage(utils.arrayify(userOpHash))
+        // put signature into user op
+        userOp[10] = userOpSignature
 
-    return userOp
+        userOps.push(userOp)
+    }
+    return userOps
 }
 
 export async function sendUserOpsToEP(provider: any, userOps: any, beneficiary: any) {
