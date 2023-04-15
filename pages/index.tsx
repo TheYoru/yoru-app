@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Dropdown from "react-bootstrap/Dropdown";
 
+import { KeyPair } from "@/umbra/classes/KeyPair"
+
 import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
 import { PlusIcon } from "@/components/PlusIcon";
@@ -40,7 +42,7 @@ export default function Home() {
   const [scanResults, setScanResults] = useState(null);
 
   const [stealPrivateK, setStealPrivateK] = useState("");
-  const [sendAmount, setSendAmount] = useState("");
+  const [sendAmount, setSendAmount] = useState("0");
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message,
     onSettled(data, error) {
@@ -48,12 +50,22 @@ export default function Home() {
       const ppk = generateViewingPrivateKey(data);
       console.log(ppk);
       saveToLocalStorage(ppk);
-      const result = getDumpReceiverPkxAndCiphertext(provider, ppk);
-      Promise.resolve(result).then((value) => {
-        console.log(value);
-      });
+      // const result = getDumpReceiverPkxAndCiphertext(provider, ); //use to send address
+      // Promise.resolve(result).then((value) => {
+      //   console.log(value);
+      // });
     }
   });
+
+  const [ targetPubKey, setTargetPubKey ] = useState(null);
+
+  const [ targetAddress, setTargetAddress ] = useState(null);
+
+  const [ targetObj, setTargetObj ] = useState({
+    pkx: null,
+    ciphertext: null,
+    receiver: null
+  })
 
   const { data: blockData, isError: blockIsError, isLoading: blockIsLoading } = useBlockNumber()
 
@@ -67,13 +79,13 @@ export default function Home() {
     abi: YoruAbi,
     functionName: 'sendEth',
     args: [
-      dumpObj.receiver[0], 
-      dumpObj.pkx, 
-      dumpObj.ciphertext
+      targetObj?.receiver?.[0], 
+      targetObj?.pkx, 
+      targetObj?.ciphertext
     ],
     overrides: {
       from: senderAddress,
-      value: utils.parseEther('0.01'),
+      value: utils.parseEther(sendAmount),
     }
   });
 
@@ -94,6 +106,7 @@ export default function Home() {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        setTargetPubKey(stealPrivateK)
         return data;
       });
   }
@@ -114,13 +127,19 @@ export default function Home() {
     setAddress(result);
   }
 
-  function sendEth() {
+  async function sendEth() {
     console.log(sendAmount.toString())
-    contractWrite({
-      recklesslySetUnpreparedOverrides: {
-        value: utils.parseEther(sendAmount.toString()),
-      }
+    const ppk = localStorage.getItem("setStealPrivateK");
+    const targetPubKey = new KeyPair(ppk).publicKeyHex
+    const result = await getDumpReceiverPkxAndCiphertext(provider, targetPubKey); //use to send address
+    console.log(result);
+    Promise.resolve(result).then((value) => { 
+      setTargetAddress(value.receiver[0]);
+      setTargetObj(value);
+      console.log(`targetAddress: ${value.receiver[0]} - ${targetObj}`);
+      contractWrite?.();
     });
+    
   }
 
   async function scanTokens() {
@@ -168,7 +187,12 @@ export default function Home() {
         </p>
       </div>
       <div className="mb-2">
-        <ConnectButton />
+        <div className="input-combine">
+          <ConnectButton />
+          <button className="btn btn-button mx-2" onClick={()=>{
+            signMessage();
+          }}>Register</button>
+        </div>
       </div>
 
       <div className="container">
@@ -236,7 +260,7 @@ export default function Home() {
                     if (e.target.value !== null)
                       setSendAmount(e.target.value);
                     else {
-                      setSendAmount(0);
+                      setSendAmount("0");
                     }
                   }} />
                   {/* <Dropdown
@@ -290,7 +314,7 @@ export default function Home() {
               Scan
             </button>
             <hr className="hr" />
-            {!scanResults && (
+            {!assets && (
               <div className="text-center font-size-5">No results</div>
             )}
             {/* {scanResults && scanResults?.map((item) => {
@@ -311,7 +335,7 @@ export default function Home() {
                       </div>
                     )
                   })}
-                <button className="btn" onClick={()=>{
+                <button className="button w-full" onClick={()=>{
                   withdraw();
                 }}>Withdraw</button>
               </div>

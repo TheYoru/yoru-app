@@ -168,29 +168,33 @@ export async function getAssets(
     const announcements = await fetchAnnouncements(provider, fromBlock, toBlock)
     let assetInfos: AssetInfo[] = []
     for (var i = 0; i < announcements.length; i++) {
-        const announce = announcements[i]
-        const event = announce.args
-        if (event != undefined) {
-            const pkx = event["pkx"]
-            const publicKey = KeyPair.getUncompressedFromX(pkx)
-            const newKeypair = keypair.mulPublicKey(publicKey)
-            const ciphertext = event["ciphertext"]
-            const randomNumberInHex = newKeypair.decrypt({
-                ephemeralPublicKey: publicKey,
-                ciphertext: ciphertext,
-            })
-            const newPrivateKey = keypair.mulPrivateKey(randomNumberInHex).privateKeyHex
-            if (newPrivateKey != undefined) {
-                const aaAddr = await getAAAddress(provider, newPrivateKey, randomNumberInHex)
-                if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
-                    const amount: BigNumber = event["amount"]
-                    assetInfos.push({
-                        AssetAddress: event["token"],
-                        Amount: amount,
-                        PrivateKey: newPrivateKey,
-                    })
+        try {
+            const announce = announcements[i]
+            const event = announce.args
+            if (event != undefined) {
+                const pkx = event["pkx"]
+                const publicKey = KeyPair.getUncompressedFromX(pkx)
+                const newKeypair = keypair.mulPublicKey(publicKey)
+                const ciphertext = event["ciphertext"]
+                const randomNumberInHex = newKeypair.decrypt({
+                    ephemeralPublicKey: publicKey,
+                    ciphertext: ciphertext,
+                })
+                const newPrivateKey = keypair.mulPrivateKey(randomNumberInHex).privateKeyHex
+                if (newPrivateKey != undefined) {
+                    const aaAddr = await getAAAddress(provider, newPrivateKey, randomNumberInHex)
+                    if (aaAddr.toLowerCase() == event["receiver"].toLowerCase()) {
+                        const amount: BigNumber = event["amount"]
+                        assetInfos.push({
+                            AssetAddress: event["token"],
+                            Amount: amount,
+                            PrivateKey: newPrivateKey,
+                        })
+                    }
                 }
             }
+        } catch(e) {
+            console.log(e)
         }
     }
     return assetInfos

@@ -15,7 +15,7 @@ const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
 export const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
 export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
 export const STEALTH_PUBKEY = "publickey"
-export const contractBlock = 8833960
+export const contractBlock = 8835950
 const transferERC20_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
     "transferERC20_withInitcode_withPaymaster_UserOp(address,address,uint256,address,uint256,address,uint256,uint256,uint256)"
 const transferETH_withInitcode_withPaymaster_UserOp_FUNCTION_SIG =
@@ -50,39 +50,46 @@ export async function getAssets(
     fromBlock: number,
     toBlock: number,
 ) {
+    console.log(fromBlock);
+    console.log(toBlock);
     const keypair = new KeyPair(privateKey)
     const announcements = await fetchAnnouncements(provider, fromBlock, toBlock)
     let assetInfos: AssetInfo[] = []
     for (var i = 0; i < announcements.length; i++) {
-        const announce = announcements[i]
-        const event = announce.args
-        if (event != undefined) {
-            const pkx = event["pkx"]
-            console.log(`tx: ${announce.transactionHash}, pkx: ${pkx}`)
-            const publicKey = KeyPair.getUncompressedFromX(pkx)
-            console.log(`publicKey: ${publicKey}`)
-            const ciphertext = event["ciphertext"]
-            const randomNumberInHex = keypair.decrypt({
-                ephemeralPublicKey: publicKey,
-                ciphertext: ciphertext,
-            })
-            const newKeypair = keypair.mulPrivateKey(randomNumberInHex)
-
-            const aaAddr = await getAAAddress(provider, newKeypair.address, randomNumberInHex)
-            const salt = utils.keccak256(randomNumberInHex)
-            console.log(aaAddr)
-            console.log(newKeypair)
-            if (aaAddr[0].toLowerCase() == event["receiver"].toLowerCase()) {
-                const amount: BigNumber = event["amount"]
-                assetInfos.push({
-                    AssetAddress: event["token"],
-                    Amount: amount,
-                    PrivateKey: newKeypair.privateKeyHex!,
-                    AccountAddress: aaAddr,
-                    Salt: salt,
+        try {
+            const announce = announcements[i]
+            const event = announce.args
+            if (event != undefined) {
+                const pkx = event["pkx"]
+                console.log(`tx: ${announce.transactionHash}, pkx: ${pkx}`)
+                const publicKey = KeyPair.getUncompressedFromX(pkx)
+                console.log(`publicKey: ${publicKey}`)
+                const ciphertext = event["ciphertext"]
+                const randomNumberInHex = keypair.decrypt({
+                    ephemeralPublicKey: publicKey,
+                    ciphertext: ciphertext,
                 })
+                const newKeypair = keypair.mulPrivateKey(randomNumberInHex)
+    
+                const aaAddr = await getAAAddress(provider, newKeypair.address, randomNumberInHex)
+                const salt = utils.keccak256(randomNumberInHex)
+                console.log(aaAddr)
+                console.log(newKeypair)
+                if (aaAddr[0].toLowerCase() == event["receiver"].toLowerCase()) {
+                    const amount: BigNumber = event["amount"]
+                    assetInfos.push({
+                        AssetAddress: event["token"],
+                        Amount: amount,
+                        PrivateKey: newKeypair.privateKeyHex!,
+                        AccountAddress: aaAddr,
+                        Salt: salt,
+                    })
+                }
             }
+        } catch (e) {
+            console.log(e)
         }
+
     }
     return assetInfos
 }
@@ -106,9 +113,9 @@ export async function getReceiverPkxAndCiphertext(provider: providers.Provider, 
     }
 }
 
-export async function getDumpReceiverPkxAndCiphertext(provider: providers.Provider, ppk: string) {
+export async function getDumpReceiverPkxAndCiphertext(provider: providers.Provider, publicKey: string) {
     // get pkx and cipher text
-    const pubkey = new KeyPair(ppk).publicKeyHex
+    const pubkey = publicKey;
     console.log(pubkey)
     const keypair = new KeyPair(pubkey)
     const randomNumber = new RandomNumber()
@@ -117,7 +124,7 @@ export async function getDumpReceiverPkxAndCiphertext(provider: providers.Provid
     const stealthKeyPair = keypair.mulPublicKey(randomNumber)
 
     // get aa addr
-    const abstractAccountAddr = getAAAddress(provider, stealthKeyPair.address, randomNumber.asHex)
+    const abstractAccountAddr = await getAAAddress(provider, stealthKeyPair.address, randomNumber.asHex)
 
     return {
         receiver: abstractAccountAddr,
