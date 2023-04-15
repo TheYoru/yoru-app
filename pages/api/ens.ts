@@ -10,7 +10,7 @@ export async function getTextRecordFromEns(ens: string, textKey: string): Promis
     let node: string = namehash.hash(ens);
 
     const mainnet = 1;
-    const provider = new ethers.AlchemyProvider(mainnet, "NlQZPwyOUAggkxM2Zueh2hOFhuitu6sN");
+    const provider = new ethers.providers.AlchemyProvider(mainnet, "NlQZPwyOUAggkxM2Zueh2hOFhuitu6sN");
     const ensResolver = new ethers.Contract(ENS_RESOLVER_ADDR, ENS_RESOLVER_ABI, provider);
     const textValue: string = await ensResolver.text(node, textKey);
 
