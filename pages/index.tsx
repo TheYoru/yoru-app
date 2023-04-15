@@ -1,182 +1,193 @@
-import Image from "next/image";
-import { Inter } from "next/font/google";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import Dropdown from "react-bootstrap/Dropdown";
+import Image from "next/image"
+import { Inter } from "next/font/google"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
+import Dropdown from "react-bootstrap/Dropdown"
 
-import { EnsIcon } from "@/components/ensIcon";
-import { LensIcon } from "@/components/LensIcon";
-import { PlusIcon } from "@/components/PlusIcon";
+import { EnsIcon } from "@/components/ensIcon"
+import { LensIcon } from "@/components/LensIcon"
+import { PlusIcon } from "@/components/PlusIcon"
 
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+import Tab from "react-bootstrap/Tab"
+import Tabs from "react-bootstrap/Tabs"
 
-import { useState, useEffect } from "react";
-import { useSignMessage, useProvider, useContractWrite, usePrepareContractWrite, useAccount, useBlockNumber } from "wagmi";
+import { useState, useEffect } from "react"
+import {
+    useSignMessage,
+    useProvider,
+    useContractWrite,
+    usePrepareContractWrite,
+    useAccount,
+    useBlockNumber,
+} from "wagmi"
 
-import { UsdcWrapper } from "@/components/UsdcWrapper";
-import { EthWrapper } from "@/components/EthWrapper";
+import { UsdcWrapper } from "@/components/UsdcWrapper"
+import { EthWrapper } from "@/components/EthWrapper"
 
-import { BigNumber, Contract, providers, utils } from "ethers";
-import { dumpObj } from '@/pages/api/ppk';
-import { abi as YoruAbi } from '@/pages/api/abis/Yoru.json'
+import { BigNumber, Contract, providers, utils } from "ethers"
+import { dumpObj } from "@/pages/api/ppk"
+import { abi as YoruAbi } from "@/pages/api/abis/Yoru.json"
 
-import { getDumpReceiverPkxAndCiphertext, STEALTH_CONTRACT_ADDRESS, getAssets, contractBlock } from '@/pages/api/stealth';
+import {
+    getDumpReceiverPkxAndCiphertext,
+    STEALTH_CONTRACT_ADDRESS,
+    getAssets,
+    contractBlock,
+} from "@/pages/api/stealth"
 
 // import { generateViewingPrivateKey } from './api/stealth'
 function generateViewingPrivateKey(signatureData: string): string {
-  const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData));
-  return privateKey;
+    const privateKey = utils.keccak256(utils.toUtf8Bytes(signatureData))
+    return privateKey
 }
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] })
 
 function triggerSend() {}
 
-const message = "ethtokyo";
+const message = "ethtokyo"
 
 export default function Home() {
-  const provider = useProvider();
-  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
-    message,
-    onSettled(data, error) {
-      console.log("Settled", { data, error });
-      const ppk = generateViewingPrivateKey(data);
-      console.log(ppk);
-      saveToLocalStorage(ppk);
-      const result = getDumpReceiverPkxAndCiphertext(provider, ppk);
-      Promise.resolve(result).then((value) => {
-        console.log(value);
-      });
+    const provider = useProvider()
+    const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+        message,
+        onSettled(data, error) {
+            console.log("Settled", { data, error })
+            const ppk = generateViewingPrivateKey(data)
+            console.log(ppk)
+            saveToLocalStorage(ppk)
+            const result = getDumpReceiverPkxAndCiphertext(provider, ppk)
+            Promise.resolve(result).then((value) => {
+                console.log(value)
+            })
+        },
+    })
+
+    const { data: blockData, isError: blockIsError, isLoading: blockIsLoading } = useBlockNumber()
+
+    const { address: senderAddress, isConnecting, isDisconnected } = useAccount()
+
+    const { config } = usePrepareContractWrite({
+        address: STEALTH_CONTRACT_ADDRESS,
+        abi: YoruAbi,
+        functionName: "sendEth",
+        args: [dumpObj.receiver[0], dumpObj.pkx, dumpObj.ciphertext],
+        overrides: {
+            from: senderAddress,
+            value: utils.parseEther("0.01"),
+        },
+    })
+    const {
+        data: contractData,
+        isLoading: contractIsLoading,
+        isSuccess: contractIsSuccess,
+        write: contractWrite,
+    } = useContractWrite(config)
+
+    const [address, setAddress] = useState(null)
+
+    function queryENS(ens) {
+        console.log(ens)
+        return fetch(`/api/query/${ens}`)
+            .then((res) => res.json())
+            .then((data) => {
+                console.log(data)
+                return data
+            })
     }
-  });
 
-  const { data: blockData, isError: blockIsError, isLoading: blockIsLoading } = useBlockNumber()
+    const [assets, setAssets] = useState([])
 
-  const { address: senderAddress, isConnecting, isDisconnected } = useAccount()
+    async function queryName(e) {
+        // Prevent the browser from reloading the page
+        e.preventDefault()
 
+        // Read the form data
+        const form = e.target
+        const formData = new FormData(form)
 
-  const { config } = usePrepareContractWrite({
-    address: STEALTH_CONTRACT_ADDRESS,
-    abi: YoruAbi,
-    functionName: 'sendEth',
-    args: [
-      dumpObj.receiver[0], 
-      dumpObj.pkx, 
-      dumpObj.ciphertext
-    ],
-    overrides: {
-      from: senderAddress,
-      value: utils.parseEther('0.01'),
+        // You can pass formData as a fetch body directly:
+        const result = await queryENS(formData.get("did-input"))
+        console.log(result)
+        setAddress(result)
     }
-  })
-  const { data: contractData, isLoading: contractIsLoading, isSuccess: contractIsSuccess, write: contractWrite } = useContractWrite(config)
 
-  const [address, setAddress] = useState(null);
+    function sendEth() {
+        contractWrite?.()
+    }
 
-  function queryENS(ens) {
-    console.log(ens);
-    return fetch(`/api/query/${ens}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
-        return data;
-      });
-  }
+    async function scanTokens() {
+        console.log("scanTokens")
+        const ppk = localStorage.getItem("setStealPrivateK")
+        console.log("ppk: " + ppk)
+        console.log(ppk)
+        const scanResult = await getAssets(provider, ppk, contractBlock, blockData)
+        console.log(scanResult)
+        setAssets(scanResult)
+    }
 
-  const [assets, setAssets] = useState([]);
+    async function withdraw() {
+        console.log("withdraw called")
+    }
 
-  async function queryName(e) {
-    // Prevent the browser from reloading the page
-    e.preventDefault();
+    const [key, setKey] = useState("send")
+    const [scanResults, setScanResults] = useState(null)
 
-    // Read the form data
-    const form = e.target;
-    const formData = new FormData(form);
+    const [stealPrivateK, setStealPrivateK] = useState("")
 
-    // You can pass formData as a fetch body directly:
-    const result = await queryENS(formData.get("did-input"));
-    console.log(result);
-    setAddress(result);
-  }
+    useEffect(() => {
+        let value
+        // Get the value from local storage if it exists
+        value = localStorage.getItem("stealPrivateK") || ""
+        setStealPrivateK(value)
+    }, [])
 
-  function sendEth() {
-    contractWrite?.();
-  }
+    // When user submits the form, save the favorite number to the local storage
+    const saveToLocalStorage = (stealPrivate) => {
+        localStorage.setItem("setStealPrivateK", stealPrivate)
+    }
 
-  async function scanTokens() {
-    console.log("scanTokens");
-    const ppk = localStorage.getItem("setStealPrivateK");
-    console.log('ppk: ' + ppk);
-    console.log(ppk);
-    const scanResult = await getAssets(provider, ppk, contractBlock, blockData);
-    console.log(scanResult);
-    setAssets(scanResult);
-  }
-
-  async function withdraw() {
-    console.log('withdraw called')
-  }
-
-  const [key, setKey] = useState("send");
-  const [scanResults, setScanResults] = useState(null);
-
-  const [stealPrivateK, setStealPrivateK] = useState("");
-
-  useEffect(() => {
-    let value;
-    // Get the value from local storage if it exists
-    value = localStorage.getItem("stealPrivateK") || "";
-    setStealPrivateK(value);
-  }, []);
-
-  // When user submits the form, save the favorite number to the local storage
-  const saveToLocalStorage = (stealPrivate) => {
-    localStorage.setItem("setStealPrivateK", stealPrivate)
-  };
-
-  return (
-    <main
-      className={
-        inter.className +
-        " flex min-h-screen flex-col items-center justify-center p-24"
-      }
-      style={{
-        background: "rgba(0,0,0, 0.2)",
-      }}
-    >
-      <div className="z-10 items-center font-mono text-sm lg:flex mb-2">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Yoru send funds secretly...
-        </p>
-      </div>
-      <div className="mb-2">
-        <ConnectButton />
-      </div>
-
-      <div className="container">
-        <Tabs
-          id="controlled-tab-example"
-          activeKey={key}
-          onSelect={(k) => setKey(k)}
-          className="mb-3"
-          variant="universal"
+    return (
+        <main
+            className={
+                inter.className + " flex min-h-screen flex-col items-center justify-center p-24"
+            }
+            style={{
+                background: "rgba(0,0,0, 0.2)",
+            }}
         >
-          <Tab eventKey="send" title="Send">
-            <div className="input-container-wrapper">
-              <div className="input-container">
-                <form method="get" onSubmit={queryName}>
-                  <div className="input-combine">
-                    <input
-                      className="input-element"
-                      type="text"
-                      id="did-input"
-                      name="did-input"
-                    />
-                    <button className="btn-button button-wrapper" type="submit">
-                      <EnsIcon />
-                      <span>ENS</span>
-                    </button>
-                    {/* <Dropdown>
+            <div className="z-10 items-center font-mono text-sm lg:flex mb-2">
+                <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+                    Yoru send funds secretly...
+                </p>
+            </div>
+            <div className="mb-2">
+                <ConnectButton />
+            </div>
+
+            <div className="container">
+                <Tabs
+                    id="controlled-tab-example"
+                    activeKey={key}
+                    onSelect={(k) => setKey(k)}
+                    className="mb-3"
+                    variant="universal"
+                >
+                    <Tab eventKey="send" title="Send">
+                        <div className="input-container-wrapper">
+                            <div className="input-container">
+                                <form method="get" onSubmit={queryName}>
+                                    <div className="input-combine">
+                                        <input
+                                            className="input-element"
+                                            type="text"
+                                            id="did-input"
+                                            name="did-input"
+                                        />
+                                        <button className="btn-button button-wrapper" type="submit">
+                                            <EnsIcon />
+                                            <span>ENS</span>
+                                        </button>
+                                        {/* <Dropdown>
                       <Dropdown.Toggle variant="button" id="dropdown-query">
                         Find Address
                       </Dropdown.Toggle>
@@ -196,25 +207,23 @@ export default function Home() {
                         </Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown> */}
-                  </div>
-                </form>
+                                    </div>
+                                </form>
 
-                <div className="address-container">
-                  <div className="address">
-                    {address && <div>{address}</div>}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <hr className="hr" />
-            <div className="img-plus">
-              <PlusIcon />
-            </div>
-            <div className="input-container-wrapper">
-              <div className="input-container">
-                <div className="input-combine">
-                  <input className="input-element" type="text" value="100" />
-                  {/* <Dropdown
+                                <div className="address-container">
+                                    <div className="address">{address && <div>{address}</div>}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr className="hr" />
+                        <div className="img-plus">
+                            <PlusIcon />
+                        </div>
+                        <div className="input-container-wrapper">
+                            <div className="input-container">
+                                <div className="input-combine">
+                                    <input className="input-element" type="text" value="100" />
+                                    {/* <Dropdown
                     onSelect={(eventKey) => {
                       console.log(eventKey);
                       if (eventKey === "lens") {
@@ -240,33 +249,33 @@ export default function Home() {
                       </Dropdown.Item>
                     </Dropdown.Menu>
                   </Dropdown> */}
-                  <button className="btn-button button-wrapper" type="submit">
-                    <EthWrapper />
-                  </button>
-                </div>
-                <div className="address-container">
-                  <div className="address"></div>
-                </div>
-              </div>
-            </div>
-            <button className="button w-full" onClick={sendEth}>Send</button>
-          </Tab>
-          <Tab eventKey="receive" title="Receive">
-            <button
-              className="button w-full"
-              disabled={isLoading}
-              onClick={() => {
-                // signMessage();
-                scanTokens();
-              }}
-            >
-              Scan
-            </button>
-            <hr className="hr" />
-            {!scanResults && (
-              <div className="text-center font-size-5">No results</div>
-            )}
-            {/* {scanResults && scanResults?.map((item) => {
+                                    <button className="btn-button button-wrapper" type="submit">
+                                        <EthWrapper />
+                                    </button>
+                                </div>
+                                <div className="address-container">
+                                    <div className="address"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button className="button w-full" onClick={sendEth}>
+                            Send
+                        </button>
+                    </Tab>
+                    <Tab eventKey="receive" title="Receive">
+                        <button
+                            className="button w-full"
+                            disabled={isLoading}
+                            onClick={() => {
+                                // signMessage();
+                                scanTokens()
+                            }}
+                        >
+                            Scan
+                        </button>
+                        <hr className="hr" />
+                        {!scanResults && <div className="text-center font-size-5">No results</div>}
+                        {/* {scanResults && scanResults?.map((item) => {
               return (
                 <div className="input-combine">
                   <div className="scan-result">{item.receiver}</div>
@@ -275,15 +284,17 @@ export default function Home() {
                 </div>
               )
             })} */}
-            {scanResults && (
-              <div>
-                <button className="btn" onClick={withdraw}>Withdraw</button>
-              </div>
-            )}
-          </Tab>
-        </Tabs>
-      </div>
-      <div id="background-radial-gradient"></div>
-    </main>
-  );
+                        {scanResults && (
+                            <div>
+                                <button className="btn" onClick={withdraw}>
+                                    Withdraw
+                                </button>
+                            </div>
+                        )}
+                    </Tab>
+                </Tabs>
+            </div>
+            <div id="background-radial-gradient"></div>
+        </main>
+    )
 }

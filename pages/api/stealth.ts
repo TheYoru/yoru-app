@@ -14,7 +14,7 @@ const entryPointAddress = "0x0576a174D229E3cFA37253523E645A78A0C91B57"
 export const STEALTH_CONTRACT_ADDRESS = "0x8D977171D2515f375d0E8E8623e7e27378eE70Fa"
 export const STEALTH_FACTORY_ADDRESS = "0xb1ae118a4f5089812296BC2714a0cB261f99cEBb"
 export const STEALTH_PUBKEY = "publickey"
-export const contractBlock = 8833960;
+export const contractBlock = 8833960
 
 export interface AssetInfo {
     AccountAddress: string
@@ -45,46 +45,41 @@ export async function getAssets(
     fromBlock: number,
     toBlock: number,
 ) {
-  const keypair = new KeyPair(privateKey);
-  const announcements = await fetchAnnouncements(provider, fromBlock, toBlock);
-  let assetInfos: AssetInfo[] = [];
-  for (var i = 0; i < announcements.length; i++) {
-    const announce = announcements[i];
-    const event = announce.args;
-    if (event != undefined) {
-      const pkx = event["pkx"];
-      console.log(`tx: ${announce.transactionHash}, pkx: ${pkx}`);
-      const publicKey = KeyPair.getUncompressedFromX(pkx);
-      console.log(`publicKey: ${publicKey}`);
-      const ciphertext = event["ciphertext"];
-      const randomNumberInHex = keypair.decrypt({
-        ephemeralPublicKey: publicKey,
-        ciphertext: ciphertext,
-      });
-      const newKeypair =
-        keypair.mulPrivateKey(randomNumberInHex);
+    const keypair = new KeyPair(privateKey)
+    const announcements = await fetchAnnouncements(provider, fromBlock, toBlock)
+    let assetInfos: AssetInfo[] = []
+    for (var i = 0; i < announcements.length; i++) {
+        const announce = announcements[i]
+        const event = announce.args
+        if (event != undefined) {
+            const pkx = event["pkx"]
+            console.log(`tx: ${announce.transactionHash}, pkx: ${pkx}`)
+            const publicKey = KeyPair.getUncompressedFromX(pkx)
+            console.log(`publicKey: ${publicKey}`)
+            const ciphertext = event["ciphertext"]
+            const randomNumberInHex = keypair.decrypt({
+                ephemeralPublicKey: publicKey,
+                ciphertext: ciphertext,
+            })
+            const newKeypair = keypair.mulPrivateKey(randomNumberInHex)
 
-        const aaAddr = await getAAAddress(
-          provider,
-          newKeypair.address,
-          randomNumberInHex
-        );
-        const salt = utils.keccak256(randomNumberInHex)
-        console.log(aaAddr);
-        console.log(newKeypair);
-        if (aaAddr[0].toLowerCase() == event["receiver"].toLowerCase()) {
-          const amount: BigNumber = event["amount"];
-          assetInfos.push({
-            AssetAddress: event["token"],
-            Amount: amount,
-            PrivateKey: newKeypair.privateKeyHex!,
-            AccountAddress: aaAddr,
-            Salt: salt,
-          });
+            const aaAddr = await getAAAddress(provider, newKeypair.address, randomNumberInHex)
+            const salt = utils.keccak256(randomNumberInHex)
+            console.log(aaAddr)
+            console.log(newKeypair)
+            if (aaAddr[0].toLowerCase() == event["receiver"].toLowerCase()) {
+                const amount: BigNumber = event["amount"]
+                assetInfos.push({
+                    AssetAddress: event["token"],
+                    Amount: amount,
+                    PrivateKey: newKeypair.privateKeyHex!,
+                    AccountAddress: aaAddr,
+                    Salt: salt,
+                })
+            }
         }
     }
-  }
-  return assetInfos
+    return assetInfos
 }
 
 export async function getReceiverPkxAndCiphertext(provider: providers.Provider, ens: string) {
@@ -164,6 +159,8 @@ async function getAAAddress(
 ) {
     const salt = utils.keccak256(randomNumberInHex)
     const factoryContract = new Contract(STEALTH_FACTORY_ADDRESS, walletFactoryABI, provider)
-    const abstractAccountAddr: string = await factoryContract.functions["getAddress(address,uint256)"](ownerAddr, salt)
+    const abstractAccountAddr: string = await factoryContract.functions[
+        "getAddress(address,uint256)"
+    ](ownerAddr, salt)
     return abstractAccountAddr
 }
