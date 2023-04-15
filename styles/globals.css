@@ -67,6 +67,7 @@ input.input-element {
   outline: none;
   width: 80%;
   font-size: 36px;
+  color: #eee;
 }
 
 .input-combine {
@@ -101,7 +102,7 @@ input.input-element {
 }
 
 
-.button {
+.button, .btn-button {
   background-color: rgb(76, 130, 251);
   font-size: 20px;
   font-weight: 600;
@@ -134,4 +135,8 @@ input.input-element {
   top: 40%;
   border: 2px solid rgba(152, 161, 192, 0.24);
 
+}
+
+.nav-universal [aria-selected="false"] {
+  color: #fff!important;
 }

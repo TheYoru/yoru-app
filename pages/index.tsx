@@ -1,26 +1,55 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import Dropdown from 'react-bootstrap/Dropdown';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import Dropdown from "react-bootstrap/Dropdown";
 
-import { EnsIcon } from '@/components/ensIcon';
+import { EnsIcon } from "@/components/ensIcon";
 import { LensIcon } from "@/components/LensIcon";
+import { PlusIcon } from "@/components/PlusIcon";
+import { EthIcon } from "@/components/EthIcon";
+import { UsdcIcon } from "@/components/UsdcIcon";
 
-import { useRef, useEffect } from "react";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
+
+import { useState, useEffect } from "react";
+
+import useSWR from "swr";
+
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 const inter = Inter({ subsets: ["latin"] });
 
 function triggerSend() {}
 
 export default function Home() {
+  // const { data, error } = useSWR('/api/query-ens', fetcher)
+  // const { ensResult, ensError } = useSWR('/api/query-ens', fetcher)
 
-  useEffect(() => {
+  function queryENS() {
+    const { data, error } = useSWR('/api/query-ens', fetcher)
+  }
 
-  })
+  function queryLens() {
+    const { data, error } = useSWR('/api/query-lens', fetcher)
+  }
+
+  function scanTokens() {
+    console.log("scanTokens");
+    
+  }
+
+  const [key, setKey] = useState("send");
+  const [ scanResults, setScanResults ] = useState(null);
+
+  useEffect(() => {});
 
   return (
     <main
-      className="flex min-h-screen flex-col items-center justify-center p-24"
+      className={
+        inter.className +
+        " flex min-h-screen flex-col items-center justify-center p-24"
+      }
       style={{
         background: "rgba(0,0,0, 0.2)",
       }}
@@ -31,87 +60,118 @@ export default function Home() {
         </p>
       </div>
       <div className="mb-2">
-      <ConnectButton />
+        <ConnectButton />
       </div>
 
       <div className="container">
-        <div className="select-tab-container">
-          <a className="select-tab">Send</a>
-          <a className="select-tab">Receive</a>
-        </div>
-        <div className="input-container-wrapper">
-          <div className="input-container">
-            <div className="input-combine">
-              <input className="input-element" type="text" />
-              <Dropdown onSelect={
-                (eventKey) => {
-                  console.log(eventKey)
-                }
-              }>
-                <Dropdown.Toggle variant="success" id="dropdown-query">
-                  Query
-                </Dropdown.Toggle>
+        <Tabs
+          id="controlled-tab-example"
+          activeKey={key}
+          onSelect={(k) => setKey(k)}
+          className="mb-3"
+          variant="universal"
+        >
+          <Tab eventKey="send" title="Send">
+            <div className="input-container-wrapper">
+              <div className="input-container">
+                <div className="input-combine">
+                  <input className="input-element" type="text" />
+                  <Dropdown
+                    onSelect={(eventKey) => {
+                      console.log(eventKey);
+                      if (eventKey === "lens") {
+                        
+                      } else {
 
-                <Dropdown.Menu>
-                  <Dropdown.Item eventKey="lens">
-                    <LensIcon />
-                  </Dropdown.Item>
-                  <Dropdown.Item eventKey="ens">
-                    <EnsIcon />
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+                      }
+                    }}
+                  >
+                    <Dropdown.Toggle variant="success" id="dropdown-query">
+                      Query
+                    </Dropdown.Toggle>
 
+                    <Dropdown.Menu>
+                      <Dropdown.Item eventKey="lens">
+                        <div className="input-combine">
+                          <LensIcon />
+                          <span>LENS</span>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="ens">
+                        <div className="input-combine">
+                          <EnsIcon />
+                          <span>ENS</span>
+                        </div>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+                <div className="address-container">
+                  <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
+                </div>
+              </div>
             </div>
-            <div className="address-container">
-              <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
+            <hr className="hr" />
+            <div className="img-plus">
+              <PlusIcon />
             </div>
-          </div>
-        </div>
-        <hr className="hr" />
-        <div className="img-plus">
-          <div color="#FFFFFF" className="sc-1es900k-0 hbdxeO">
-            <svg
-              height="24px"
-              width="24px"
-              version="1.1"
-              id="Layer_1"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 495 495"
-              fill="#fff"
-            >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <polygon
-                  style={{"fill":"#fff;"}}
-                  points="495,227.5 267.5,227.5 267.5,0 227.5,0 227.5,227.5 0,227.5 0,267.5 227.5,267.5 227.5,495 267.5,495 267.5,267.5 495,267.5 "
-                ></polygon>{" "}
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div className="input-container-wrapper">
-          <div className="input-container">
-            <div className="input-combine">
-              <input className="input-element" type="text" value="100" />
-              <img
-                alt="WETH logo"
-                src="https://raw.githubusercontent.com/Uniswap/assets/master/blockchains/arbitrum/assets/0x82aF49447D8a07e3bd95BD0d56f35241523fBab1/logo.png"
-                className="img-icon"
-              />
+            <div className="input-container-wrapper">
+              <div className="input-container">
+                <div className="input-combine">
+                  <input className="input-element" type="text" value="100" />
+                  <Dropdown
+                    onSelect={(eventKey) => {
+                      console.log(eventKey);
+                      if (eventKey === "lens") {
+                      } else {
+                      }
+                    }}
+                  >
+                    <Dropdown.Toggle variant="success" id="dropdown-query">
+                      Select Tokens
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                      <Dropdown.Item eventKey="eth">
+                        <div className="input-combine">
+                          <EthIcon width="36px" height="36px" />
+                          <span>ETH</span>
+                        </div>
+                      </Dropdown.Item>
+                      <Dropdown.Item eventKey="usdc">
+                        <div className="input-combine">
+                          <UsdcIcon width="36px" height="36px" />
+                          <span>USDC</span>
+                        </div>
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+                <div className="address-container">
+                  <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
+                </div>
+              </div>
             </div>
-            <div className="address-container">
-              <div className="address">0xdfdsfldfjsadfdjsfsdfsdfsdfsd</div>
-            </div>
-          </div>
-        </div>
-        <button className="button w-full">Send</button>
+            <button className="button w-full">Send</button>
+          </Tab>
+          <Tab eventKey="receive" title="Receive">
+            <button className="button w-full" onClick={()=>{
+
+            }}>Scan</button>
+            <hr className="hr" />
+            {!scanResults && <div className="text-center font-size-5">No results</div>}
+            {scanResults && scanResults?.map((item) => {
+              return (
+                <div className="input-combine">
+                  <div className="scan-result">{item.receiver}</div>
+                  <div className="scan-result">{item.token}</div>
+                  <div className="scan-result">{item.amount}</div>
+                </div>
+              )
+            })}
+            
+          </Tab>
+        </Tabs>
       </div>
       <div id="background-radial-gradient"></div>
     </main>
