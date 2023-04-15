@@ -13,7 +13,7 @@ export async function getTextRecordFromEns(ens: string, textKey: string): Promis
     const mainnet = 1;
     const provider = new ethers.providers.AlchemyProvider(mainnet, MAINNET_ALCHEMY_API);
     const ensResolver = new ethers.Contract(ENS_RESOLVER_ADDR, ENS_RESOLVER_ABI, provider);
-    const textValue: string = await ensResolver.text(node, textKey);
+    const textValue: string = await ensResolver.function['text(bytes32,string)'](node, textKey);
 
     return textValue;
 }
@@ -25,6 +25,6 @@ export async function getAddrFromEns(ens: string): Promise<string> {
     const mainnet = 1;
     const provider = new ethers.providers.AlchemyProvider(mainnet, MAINNET_ALCHEMY_API);
     const ensResolver = new ethers.Contract(ENS_RESOLVER_ADDR, ENS_RESOLVER_ABI, provider);
-    const addr: string = await ensResolver.addr(node);
+    const addr: string = await ensResolver.function['addr(bytes32)'](node);
     return addr;
 }
