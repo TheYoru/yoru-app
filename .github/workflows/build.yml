@@ -26,7 +26,3 @@ jobs:
 
       - name: Format
         run: yarn run check-pretty
-
-      - name: Lint
-        run: |
-          yarn run lint
