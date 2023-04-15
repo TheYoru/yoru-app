@@ -19,7 +19,7 @@ import useSWR from "swr";
 import { UsdcWrapper } from "@/components/UsdcWrapper";
 import { EthWrapper } from "@/components/EthWrapper";
 
-import { generateViewingPrivateKey } from 'api/stealth'
+import { generateViewingPrivateKey } from './api/stealth'
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
@@ -34,7 +34,8 @@ export default function Home() {
     message,
     onSettled(data, error) {
       console.log('Settled', { data, error })
-      saveToLocalStorage(data);
+      const ppk = generateViewingPrivateKey(data)
+      saveToLocalStorage(ppk);
     },
   });
 
