@@ -197,10 +197,18 @@ export default function Home() {
     
   }
 
-  const queryServices = []
+  const supportServices = [
+    'ens',
+    'lens'
+  ]
+
+  const [selectedService, setSelectedService] = useState(supportServices[0]);
 
   function changeService() {
-
+    const current = selectedService;
+    const currentIndex = supportServices.indexOf(current);
+    setSelectedService(supportServices[(currentIndex + 1) % supportServices.length]);
+    console.log(selectedService);
   }
 
   const supportTokens = [
@@ -238,6 +246,7 @@ export default function Home() {
       }
       style={{
         background: "rgba(0,0,0, 0.2)",
+        width: "960px"
       }}
     >
       <div className="z-10 items-center font-mono text-sm lg:flex mb-2">
@@ -279,8 +288,8 @@ export default function Home() {
                     <button className="btn-button button-wrapper" onClick={()=>{
                       changeService();
                     }}>
-                      <EnsIcon />
-                      <span>ENS</span>
+                      {selectedService === 'ens' && <div className="input-combine" style={{"width":"120px"}}><EnsIcon /><span>ENS</span></div>}
+                      {selectedService === 'lens' && <div className="input-combine" style={{"width":"120px"}}><LensIcon /><span>LENS</span></div>}
                     </button>
                     {/* <Dropdown>
                       <Dropdown.Toggle variant="button" id="dropdown-query">
