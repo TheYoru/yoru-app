@@ -409,9 +409,9 @@ export default function Home() {
             })} */}
             {assets && (
               <div className="assets-wrapper">
-                  {assets.map((asset) => {
+                  {assets.map((asset, i) => {
                     return (
-                      <div className="input-combine asset-item">
+                      <div className="input-combine asset-item" key={i}>
                       {asset.AccountAddress} {getToken(asset.AssetAddress, utils.formatEther(asset.Amount))}
                       </div>
                     )
